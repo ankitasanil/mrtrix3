@@ -31,10 +31,10 @@ def usage(base_parser, subparsers): #pylint: disable=unused-variable
   parser.add_citation('Dhollander, T.; Raffelt, D. & Connelly, A. Unsupervised 3-tissue response function estimation from single-shell or multi-shell diffusion MR data without a co-registered T1 image. ISMRM Workshop on Breaking the Barriers of Diffusion MRI, 2016, 5')
   parser.add_citation('Dhollander, T.; Mito, R.; Raffelt, D. & Connelly, A. Improved white matter response function estimation for 3-tissue constrained spherical deconvolution. Proc Intl Soc Mag Reson Med, 2019, 555',
                       condition='If -wm_algo option is not used')
-  parser.add_argument('input', help='Input DWI dataset')
-  parser.add_argument('out_sfwm', help='Output single-fibre WM response function text file')
-  parser.add_argument('out_gm', help='Output GM response function text file')
-  parser.add_argument('out_csf', help='Output CSF response function text file')
+  parser.add_argument('input', type=app.Parser.ImageIn(), help='Input DWI dataset')
+  parser.add_argument('out_sfwm', type=app.Parser.ArgFileOut(), help='Output single-fibre WM response function text file')
+  parser.add_argument('out_gm', type=app.Parser.ImageOut(), help='Output GM response function text file')
+  parser.add_argument('out_csf', type=app.Parser.ImageOut(), help='Output CSF response function text file')
   options = parser.add_argument_group('Options for the \'dhollander\' algorithm')
   options.add_argument('-erode', type=int, default=3, help='Number of erosion passes to apply to initial (whole brain) mask. Set to 0 to not erode the brain mask. (default: 3)')
   options.add_argument('-fa', type=float, default=0.2, help='FA threshold for crude WM versus GM-CSF separation. (default: 0.2)')
@@ -85,7 +85,7 @@ def execute(): #pylint: disable=unused-variable
   # Get lmax information (if provided).
   sfwm_lmax = [ ]
   if app.ARGS.lmax:
-    sfwm_lmax = [ int(x.strip()) for x in app.ARGS.lmax.split(',') ]
+    sfwm_lmax = app.ARGS.lmax
     if not len(sfwm_lmax) == len(bvalues):
       raise MRtrixError('Number of lmax\'s (' + str(len(sfwm_lmax)) + ', as supplied to the -lmax option: ' + ','.join(map(str,sfwm_lmax)) + ') does not match number of unique b-values.')
     for sfl in sfwm_lmax:

@@ -28,13 +28,13 @@ def usage(base_parser, subparsers): #pylint: disable=unused-variable
   parser.set_author('Robert E. Smith (robert.smith@florey.edu.au)')
   parser.set_synopsis('Derive MSMT-CSD tissue response functions based on a co-registered five-tissue-type (5TT) image')
   parser.add_citation('Jeurissen, B.; Tournier, J.-D.; Dhollander, T.; Connelly, A. & Sijbers, J. Multi-tissue constrained spherical deconvolution for improved analysis of multi-shell diffusion MRI data. NeuroImage, 2014, 103, 411-426')
-  parser.add_argument('input', help='The input DWI')
-  parser.add_argument('in_5tt', help='Input co-registered 5TT image')
-  parser.add_argument('out_wm', help='Output WM response text file')
-  parser.add_argument('out_gm', help='Output GM response text file')
-  parser.add_argument('out_csf', help='Output CSF response text file')
+  parser.add_argument('input', type=app.Parser.ImageIn(), help='The input DWI')
+  parser.add_argument('in_5tt', type=app.Parser.ImageIn(), help='Input co-registered 5TT image')
+  parser.add_argument('out_wm', type=app.Parser.ArgFileOut(), help='Output WM response text file')
+  parser.add_argument('out_gm', type=app.Parser.ArgFileOut(), help='Output GM response text file')
+  parser.add_argument('out_csf', type=app.Parser.ArgFileOut(), help='Output CSF response text file')
   options = parser.add_argument_group('Options specific to the \'msmt_5tt\' algorithm')
-  options.add_argument('-dirs', help='Manually provide the fibre direction in each voxel (a tensor fit will be used otherwise)')
+  options.add_argument('-dirs', type=app.Parser.ImageIn(), help='Provide an input image that contains a pre-estimated fibre direction in each voxel (a tensor fit will be used otherwise)')
   options.add_argument('-fa', type=float, default=0.2, help='Upper fractional anisotropy threshold for GM and CSF voxel selection (default: 0.2)')
   options.add_argument('-pvf', type=float, default=0.95, help='Partial volume fraction threshold for tissue voxel selection (default: 0.95)')
   options.add_argument('-wm_algo', metavar='algorithm', choices=WM_ALGOS, default='tournier', help='dwi2response algorithm to use for WM single-fibre voxel selection (options: ' + ', '.join(WM_ALGOS) + '; default: tournier)')
@@ -90,7 +90,7 @@ def execute(): #pylint: disable=unused-variable
   # Get lmax information (if provided)
   wm_lmax = [ ]
   if app.ARGS.lmax:
-    wm_lmax = [ int(x.strip()) for x in app.ARGS.lmax.split(',') ]
+    wm_lmax = app.ARGS.lmax
     if not len(wm_lmax) == len(shells):
       raise MRtrixError('Number of manually-defined lmax\'s (' + str(len(wm_lmax)) + ') does not match number of b-values (' + str(len(shells)) + ')')
     for shell_l in wm_lmax:

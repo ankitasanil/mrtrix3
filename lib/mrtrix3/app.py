@@ -122,7 +122,7 @@ def _execute(module): #pylint: disable=unused-variable
     module.usage(CMDLINE)
   except AttributeError:
     CMDLINE = None
-    raise
+    raise 
 
   ########################################################################################################################
   # Note that everything after this point will only be executed if the script is designed to operate against the library #
@@ -1101,6 +1101,90 @@ class Parser(argparse.ArgumentParser):
            not group == self._positionals and \
            group.title not in ( 'options', 'optional arguments' )
 
+  class Boolean:
+    def __call__(self, input_value):
+      processed_value = input_value.lower().strip()
+      if processed_value.lower() == 'true' or processed_value == 'yes':
+        return True
+      elif processed_value.lower() == 'false' or processed_value == 'no':
+        return False
+      else:
+        raise argparse.ArgumentTypeError('Entered value is not of type boolean')
+
+  class IntSeq:
+    def __call__(self, input_value):
+      int_list = []
+      try:
+        int_list = [int(i) for i in input_value.split(',')]
+      except (ValueError, NameError) as e:
+        raise argparse.ArgumentTypeError('Entered value is not an integer sequence')
+      return int_list
+  
+  class FloatSeq:
+    def __call__(self, input_value):
+      float_list = []
+      try:
+        float_list = [float(i) for i in input_value.split(',')]
+      except (ValueError, NameError) as e:
+        raise argparse.ArgumentTypeError('Entered value is not a float sequence')
+      return float_list
+
+  class ArgDirectoryIn:
+    def __call__(self, input_value):
+      if not os.path.exists(input_value):
+        raise argparse.ArgumentTypeError(input_value + ' does not exist')
+      elif not os.path.isdir(input_value):
+        raise argparse.ArgumentTypeError(input_value + ' is not a directory')
+      else:
+        return input_value
+
+  class ArgDirectoryOut:
+    def __call__(self, input_value):
+      return input_value
+
+  class ArgFileIn:
+    def __call__(self, input_value):
+      if not os.path.exists(input_value):
+        raise argparse.ArgumentTypeError(input_value + ' path does not exist')
+      elif not os.path.isfile(input_value):
+        raise argparse.ArgumentTypeError(input_value + ' is not a file')
+      else:
+        return input_value
+
+  class ArgFileOut:
+    def __call__(self, input_value):
+      return input_value
+
+  class ImageIn:
+    def __call__(self, input_value):
+      if(input_value == '-'):
+        if not sys.stdin.isatty():
+          input_value = sys.stdin.read().strip()
+        else:
+          raise argparse.ArgumentTypeError('Input unavailable in stdin from command before pipe.')
+      return input_value
+
+  class ImageOut:
+    def __call__(self, input_value):
+      if(input_value == '-'):
+        result_str = ''.join(random.choice(string.ascii_letters) for i in range(6))
+        input_value = 'mrtrix-tmp-' + result_str + '.mif'
+      return input_value
+
+  class TracksIn(ArgFileIn):
+    def __call__(self, input_value):
+      super().__call__(input_value)
+      if not input_value.endswith('.tck'):
+        raise argparse.ArgumentTypeError(input_value + ' is not a valid track file')
+      else:
+        return input_value 
+
+  class TracksOut:
+    def __call__(self, input_value):
+      if not input_value.endsWith('.tck'):
+        raise argparse.ArgumentTypeError(input_value + ' must use the .tck suffix')
+      else:
+        return input_value          
 
 
 

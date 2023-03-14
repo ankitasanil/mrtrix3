@@ -23,11 +23,11 @@ def usage(base_parser, subparsers): #pylint: disable=unused-variable
   parser = subparsers.add_parser('manual', parents=[base_parser])
   parser.set_author('Robert E. Smith (robert.smith@florey.edu.au)')
   parser.set_synopsis('Derive a response function using an input mask image alone (i.e. pre-selected voxels)')
-  parser.add_argument('input', help='The input DWI')
-  parser.add_argument('in_voxels', help='Input voxel selection mask')
-  parser.add_argument('output', help='Output response function text file')
+  parser.add_argument('input', type=app.Parser.ImageIn(), help='The input DWI')
+  parser.add_argument('in_voxels', type=app.Parser.ImageIn(), help='Input voxel selection mask')
+  parser.add_argument('output', type=app.Parser.ArgFileOut(), help='Output response function text file')
   options = parser.add_argument_group('Options specific to the \'manual\' algorithm')
-  options.add_argument('-dirs', help='Manually provide the fibre direction in each voxel (a tensor fit will be used otherwise)')
+  options.add_argument('-dirs', type=app.Parser.ImageIn(), help='Provide an input image that contains a pre-estimated fibre direction in each voxel (a tensor fit will be used otherwise)')
 
 
 
@@ -63,7 +63,7 @@ def execute(): #pylint: disable=unused-variable
   # Get lmax information (if provided)
   lmax = [ ]
   if app.ARGS.lmax:
-    lmax = [ int(x.strip()) for x in app.ARGS.lmax.split(',') ]
+    lmax = app.ARGS.lmax
     if not len(lmax) == len(shells):
       raise MRtrixError('Number of manually-defined lmax\'s (' + str(len(lmax)) + ') does not match number of b-value shells (' + str(len(shells)) + ')')
     for shell_l in lmax:
